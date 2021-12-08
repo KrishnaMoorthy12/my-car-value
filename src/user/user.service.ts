@@ -11,8 +11,8 @@ export class UserService {
 		return await this.repo.find();
 	}
 
-	async create(email: string, password: string): Promise<User> {
-		const newUser = this.repo.create({ email, password });
+	async create(email: string, username: string, password: string): Promise<User> {
+		const newUser = this.repo.create({ email, username, password });
 		return await this.repo.save(newUser);
 	}
 
@@ -31,12 +31,17 @@ export class UserService {
 	}
 
 	async update(id: number, attrs: Partial<User>) {
-		const res = await this.repo.update(id, attrs);
-		if (res.affected === 0) throw new NotFoundException('user not found');
+		// const res = await this.repo.update(id, attrs);
+		// if (res.affected === 0) throw new NotFoundException('user not found');
+		const user = await this.findOne(id);
+		Object.assign(user, attrs);
+		return this.repo.save(user);
 	}
 
 	async delete(id: number) {
-		const res = await this.repo.delete(id);
-		if (res.affected === 0) throw new NotFoundException('user not found');
+		// const res = await this.repo.delete(id);
+		// if (res.affected === 0) throw new NotFoundException('user not found');
+		const user = await this.findOne(id);
+		return this.repo.remove(user);
 	}
 }
