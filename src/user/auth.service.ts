@@ -1,5 +1,5 @@
-import bcrypt from 'bcrypt';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { hash, compare } from 'bcrypt';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from './user.service';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class AuthService {
 		}
 
 		//hash
-		const hashedPassword = await bcrypt.hash(password, 5);
+		const hashedPassword = await hash(password, 5);
 
 		// create a user
 		const newUser = this.userService.create(email, username, hashedPassword);
@@ -22,5 +22,13 @@ export class AuthService {
 		return newUser;
 	}
 
-	// signin() {}
+	async signin(email: string, password: string) {
+		const [user] = await this.userService.find(email);
+
+		if (!user || !(await compare(password, user.password))) {
+			throw new UnauthorizedException('Incorrect email or password');
+		}
+
+		return user;
+	}
 }

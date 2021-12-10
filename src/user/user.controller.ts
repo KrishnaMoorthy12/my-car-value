@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestj
 import { Serialize } from 'src/interceptors/SerializeInterceptor';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dtos/create-user.dto';
+import { Credentials } from './dtos/credentials.dto';
 import { UserDto } from './dtos/user.dto';
 import { UserService } from './user.service';
 
@@ -16,6 +17,11 @@ export class UserController {
 	@Post('/signup')
 	createUser(@Body() body: CreateUserDto) {
 		return this.authService.signup(body.email, body.username, body.password);
+	}
+
+	@Post('/signin')
+	signin(@Body() body: Credentials) {
+		return this.authService.signin(body.email, body.password);
 	}
 
 	@Get('/')
