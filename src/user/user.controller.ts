@@ -1,6 +1,19 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Session } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	Patch,
+	Post,
+	Query,
+	Session,
+	UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from 'src/guards/auth.gaurd';
 import { Serialize } from 'src/interceptors/SerializeInterceptor';
 import { AuthService } from './auth.service';
+import { CurrentUser } from './decorators/current-user.decorator';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { Credentials } from './dtos/credentials.dto';
 import { UserDto } from './dtos/user.dto';
@@ -15,13 +28,14 @@ export class UserController {
 		private readonly authService: AuthService,
 	) {}
 
-	private setSession(session: any, user: User) {
-		Object.assign(session, { userId: user.id });
+	private setSession(session: any, user?: User) {
+		Object.assign(session, { userId: user?.id ?? null });
 	}
 
 	@Get('/whoami')
-	whoami(@Session() session) {
-		return this.userService.findOne(session.userId);
+	@UseGuards(AuthGuard)
+	whoami(@CurrentUser() user: User) {
+		return user;
 	}
 
 	@Post('/signup')
@@ -36,6 +50,11 @@ export class UserController {
 		const user = await this.authService.signin(body.email, body.password);
 		this.setSession(session, user);
 		return user;
+	}
+
+	@Post('/signout')
+	signout(@Session() session) {
+		this.setSession(session, null);
 	}
 
 	@Get('/')
