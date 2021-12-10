@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Session } from '@nestjs/common';
 import { Serialize } from 'src/interceptors/SerializeInterceptor';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { Credentials } from './dtos/credentials.dto';
 import { UserDto } from './dtos/user.dto';
+import { User } from './user.entity';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -14,14 +15,22 @@ export class UserController {
 		private readonly authService: AuthService,
 	) {}
 
+	private setSession(session: any, user: User) {
+		Object.assign(session, { userId: user.id });
+	}
+
 	@Post('/signup')
-	createUser(@Body() body: CreateUserDto) {
-		return this.authService.signup(body.email, body.username, body.password);
+	async createUser(@Body() body: CreateUserDto, @Session() session) {
+		const user = await this.authService.signup(body.email, body.username, body.password);
+		this.setSession(session, user);
+		return user;
 	}
 
 	@Post('/signin')
-	signin(@Body() body: Credentials) {
-		return this.authService.signin(body.email, body.password);
+	async signin(@Body() body: Credentials, @Session() session) {
+		const user = await this.authService.signin(body.email, body.password);
+		this.setSession(session, user);
+		return user;
 	}
 
 	@Get('/')
