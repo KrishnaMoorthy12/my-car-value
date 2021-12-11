@@ -12,6 +12,8 @@ export class UserService {
 	}
 
 	async create(email: string, username: string, password: string): Promise<User> {
+		const user = await this.repo.find({ email });
+		if (user.length > 0) throw new BadRequestException('email in use');
 		const newUser = this.repo.create({ email, username, password });
 		return await this.repo.save(newUser);
 	}

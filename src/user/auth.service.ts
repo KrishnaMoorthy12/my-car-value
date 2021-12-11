@@ -9,7 +9,7 @@ export class AuthService {
 	async signup(email: string, username: string, password: string) {
 		// check if email is free
 		const user = await this.userService.find(email);
-		if (!user) {
+		if (user.length) {
 			throw new BadRequestException('email in use');
 		}
 
