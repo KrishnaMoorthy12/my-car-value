@@ -1,6 +1,7 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AuthService } from './auth.service';
+import { User } from './user.entity';
 import { UserService } from './user.service';
 
 describe('Auth Service', () => {
@@ -8,10 +9,14 @@ describe('Auth Service', () => {
 	let fakeUsersService: Partial<UserService>;
 
 	beforeEach(async () => {
+		const users: User[] = [];
 		fakeUsersService = {
-			find: () => Promise.resolve([]),
-			create: (email: string, username: string, password: string) =>
-				Promise.resolve({ id: 1, email, username, password }),
+			find: email => Promise.resolve(users.filter(u => u.email === email)),
+			create: (email: string, username: string, password: string) => {
+				const user = { id: Math.floor(Math.random() * 888), email, username, password };
+				users.push(user);
+				return Promise.resolve(user);
+			},
 		};
 
 		const module = await Test.createTestingModule({
@@ -41,21 +46,40 @@ describe('Auth Service', () => {
 		// expect(hash).toBeDefined();
 	});
 
-	it('throw if email is in use', async () => {
-		fakeUsersService.find = () =>
-			Promise.resolve([
-				{
-					id: 1,
-					email: 'asdf@asdf.com',
-					username: 'Some user',
-					password: 'dummy',
-				},
-			]);
+	it('throws if email is in use', async () => {
 		try {
+			await authService.signup('test@email.com', 'Test', 'Password');
 			await authService.signup('test@email.com', 'Test', 'Password');
 		} catch (error) {
 			expect(error).toBeDefined();
 			expect(error instanceof BadRequestException).toBeTruthy();
+		}
+	});
+
+	it('throws if signin is attempted with unused email', async () => {
+		try {
+			await authService.signin('test@test.com', 'test');
+		} catch (error) {
+			expect(error).toBeDefined();
+			expect(error instanceof UnauthorizedException).toBeTruthy();
+		}
+	});
+
+	it('throws if an invalid password is provided', async () => {
+		try {
+			await authService.signup('test@email.com', 'user', 'password');
+			await authService.signin('test@email.com', 'qwerty');
+		} catch (error) {
+			expect(error).toBeDefined();
+		}
+	});
+
+	it('return user if valid password is provided', async () => {
+		try {
+			await authService.signup('test@email.com', 'user', 'password');
+			await authService.signin('test@email.com', 'password');
+		} catch (error) {
+			expect(error).toBeDefined();
 		}
 	});
 });
