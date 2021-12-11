@@ -40,15 +40,11 @@ describe('Auth Service', () => {
 		const user = await authService.signup('test@email.com', 'Test user', 'testpass');
 
 		expect(user.password).not.toEqual('testpass');
-
-		// const [salt, hash] = user.password.split('.');
-		// expect(salt).toBeDefined();
-		// expect(hash).toBeDefined();
 	});
 
 	it('throws if email is in use', async () => {
+		await authService.signup('test@email.com', 'Test', 'Password');
 		try {
-			await authService.signup('test@email.com', 'Test', 'Password');
 			await authService.signup('test@email.com', 'Test', 'Password');
 		} catch (error) {
 			expect(error).toBeDefined();
@@ -66,8 +62,8 @@ describe('Auth Service', () => {
 	});
 
 	it('throws if an invalid password is provided', async () => {
+		await authService.signup('test@email.com', 'user', 'password');
 		try {
-			await authService.signup('test@email.com', 'user', 'password');
 			await authService.signin('test@email.com', 'qwerty');
 		} catch (error) {
 			expect(error).toBeDefined();
