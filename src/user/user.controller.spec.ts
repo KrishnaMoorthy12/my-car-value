@@ -10,7 +10,10 @@ describe('User Controller', () => {
 	let controller: UserController;
 
 	beforeEach(async () => {
-		authService = {};
+		authService = {
+			signin: (email: string, password: string) =>
+				Promise.resolve({ id: 1, username: 'user', email, password }),
+		};
 
 		userService = {
 			findOne: id =>
@@ -58,5 +61,17 @@ describe('User Controller', () => {
 		} catch (err) {
 			expect(err).toBeDefined();
 		}
+	});
+
+	it('signin should return the user and set the userId on session', async () => {
+		const credentials = { email: 'test@test.com', password: 'simple-password' };
+		const session: Record<string, any> = {};
+
+		const user = await controller.signin(credentials, session);
+
+		expect(user).toBeDefined();
+		expect({ email: user.email, password: user.password }).toEqual(credentials);
+		expect(session).toHaveProperty('userId');
+		expect(session.userId).toEqual(1);
 	});
 });
