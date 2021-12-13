@@ -7,7 +7,7 @@ import request from 'supertest';
 describe('Auth Controller', () => {
 	let app: INestApplication;
 
-	beforeAll(async () => {
+	beforeEach(async () => {
 		const appModule: TestingModule = await Test.createTestingModule({
 			imports: [AppModule],
 		}).compile();
@@ -17,7 +17,7 @@ describe('Auth Controller', () => {
 		app.init();
 	});
 
-	it('GET: /user/signup', async () => {
+	it('POST: /user/signup', async () => {
 		const email = 'asdfg@email.com';
 		return request(app.getHttpServer())
 			.post('/user/signup')
@@ -28,5 +28,27 @@ describe('Auth Controller', () => {
 				expect(id).toBeDefined();
 				expect(email).toEqual(email);
 			});
+	});
+
+	it('GET: /user/whoami', async () => {
+		const [email, password] = ['asdf@email.com', 'password'];
+		await request(app.getHttpServer())
+			.post('/user/signup')
+			.send({ email, username: 'user', password })
+			.expect(201);
+
+		const res = await request(app.getHttpServer())
+			.post('/user/signin')
+			.send({ email, password })
+			.expect(201);
+
+		const cookie = res.get('Set-Cookie');
+
+		const { body } = await request(app.getHttpServer())
+			.get('/user/whoami')
+			.set('Cookie', cookie)
+			.expect(200);
+
+		expect(body.email).toEqual(email);
 	});
 });

@@ -9,5 +9,7 @@ global.beforeEach(async () => {
 });
 
 global.afterEach(async () => {
-	await getConnection().close();
+	try {
+		await getConnection().close();
+	} catch (error) {}
 });
