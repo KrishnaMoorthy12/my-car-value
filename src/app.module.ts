@@ -1,29 +1,42 @@
 import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_PIPE } from '@nestjs/core';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import cookieSession from 'cookie-session';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from './user/user.module';
 import { ReportModule } from './report/report.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { APP_PIPE } from '@nestjs/core';
-import cookieSession from 'cookie-session';
+import { UserModule } from './user/user.module';
 
 @Module({
 	imports: [
+		ConfigModule.forRoot({
+			isGlobal: true,
+			envFilePath: `.env.${process.env.NODE_ENV}`,
+		}),
+		TypeOrmModule.forRootAsync({
+			imports: [ConfigService],
+			useFactory: async (config: ConfigService) => {
+				return {
+					type: 'sqlite',
+					database: config.get<string>('DB_NAME'),
+					synchronize: true,
+					autoLoadEntities: true,
+				};
+			},
+			inject: [ConfigService],
+		}),
 		UserModule,
 		ReportModule,
-		TypeOrmModule.forRoot({
-			type: 'sqlite',
-			database: 'db.sqlite',
-			autoLoadEntities: true,
-			synchronize: process.env.NODE_ENV !== 'production',
-		}),
 	],
 	controllers: [AppController],
 	providers: [
 		AppService,
 		{
 			provide: APP_PIPE,
-			useValue: new ValidationPipe({ whitelist: true }),
+			useValue: new ValidationPipe({
+				whitelist: true,
+			}),
 		},
 	],
 })

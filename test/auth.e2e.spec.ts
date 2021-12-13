@@ -18,7 +18,7 @@ describe('Auth Controller', () => {
 	});
 
 	it('GET: /user/signup', async () => {
-		const email = 'asdf@email.com';
+		const email = 'asdfg@email.com';
 		return request(app.getHttpServer())
 			.post('/user/signup')
 			.send({ email, username: 'asdf', password: 'pass' })
