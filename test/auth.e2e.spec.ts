@@ -1,7 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
-import { setupApp } from '../src/setup-app';
 import request from 'supertest';
 
 describe('Auth Controller', () => {
@@ -13,7 +12,7 @@ describe('Auth Controller', () => {
 		}).compile();
 
 		app = appModule.createNestApplication();
-		setupApp(app);
+		// setupApp(app);
 		app.init();
 	});
 
