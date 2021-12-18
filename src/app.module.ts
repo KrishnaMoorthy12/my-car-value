@@ -41,12 +41,14 @@ import { UserModule } from './user/user.module';
 	],
 })
 export class AppModule {
+	constructor(private readonly config: ConfigService) {}
+
 	configure(consumer: MiddlewareConsumer) {
 		consumer
 			.apply(
 				cookieSession({
 					expires: new Date(Date.now() + 60 * 60 * 1000),
-					keys: ['secret'],
+					keys: [this.config.get('SESSION_KEY')],
 				}),
 			)
 			.forRoutes('*');
