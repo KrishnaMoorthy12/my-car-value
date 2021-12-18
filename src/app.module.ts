@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import cookieSession from 'cookie-session';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -16,11 +16,15 @@ import { UserModule } from './user/user.module';
 		}),
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigService],
-			useFactory: async (config: ConfigService) => {
+			useFactory: async (config: ConfigService): Promise<TypeOrmModuleOptions> => {
 				return {
-					type: 'sqlite',
+					type: process.env.NODE_ENV === 'production' ? 'mysql' : 'sqlite',
 					database: config.get<string>('DB_NAME'),
-					synchronize: true,
+					host: config.get<string>('DB_HOST'),
+					port: config.get<number>('DB_PORT'),
+					username: config.get<string>('DB_USER'),
+					password: config.get<string>('DB_PASS'),
+					synchronize: process.env.NODE_ENV !== 'production',
 					autoLoadEntities: true,
 				};
 			},
