@@ -6,7 +6,7 @@ import { UserService } from './user.service';
 export class AuthService {
 	constructor(private readonly userService: UserService) {}
 
-	async signup(email: string, username: string, password: string) {
+	async signup(email: string, username: string, password: string, admin: boolean) {
 		// check if email is free
 		const user = await this.userService.find(email);
 		if (user.length) {
@@ -17,7 +17,7 @@ export class AuthService {
 		const hashedPassword = await hash(password, 5);
 
 		// create a user
-		const newUser = this.userService.create(email, username, hashedPassword);
+		const newUser = this.userService.create(email, username, hashedPassword, admin);
 
 		return newUser;
 	}

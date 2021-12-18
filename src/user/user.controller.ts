@@ -10,7 +10,7 @@ import {
 	Session,
 	UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '../guards/auth.gaurd';
+import { AuthGuard } from '../guards/auth.guard';
 import { Serialize } from '../interceptors/SerializeInterceptor';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -38,7 +38,12 @@ export class UserController {
 
 	@Post('/signup')
 	async createUser(@Body() body: CreateUserDto, @Session() session) {
-		const user = await this.authService.signup(body.email, body.username, body.password);
+		const user = await this.authService.signup(
+			body.email,
+			body.username,
+			body.password,
+			body.admin,
+		);
 		this.setSession(session, user);
 		return user;
 	}
